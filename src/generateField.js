@@ -1,5 +1,5 @@
-const ROWS_COUNT = 3;
-const COLS_COUNT = 3;
+const ROWS_COUNT = 5;
+const COLS_COUNT = 5;
 const field = document.querySelector('.field');
 
 function generateCols(row, colsCount, rowId) {
