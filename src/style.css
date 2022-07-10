@@ -7,7 +7,7 @@
 }
 
 html {
-  font: 20px/1 'Verdana', sans-serif;
+  font: 20px/1 "Verdana", sans-serif;
   height: 100%;
   width: 100%;
 }
@@ -65,7 +65,7 @@ body {
 }
 
 .ch:before {
-  content: 'x';
+  content: "x";
   display: block;
   position: absolute;
   width: 100%;
@@ -80,7 +80,7 @@ body {
 }
 
 .r:before {
-  content: 'o';
+  content: "o";
   display: block;
   position: absolute;
   width: 100%;
@@ -95,7 +95,7 @@ body {
 }
 
 .cell.win:after {
-  content: '';
+  content: "";
   top: 50%;
   height: 0px;
   display: block;
