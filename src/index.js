@@ -190,22 +190,22 @@ window.addEventListener("load", () => {
         winningConditionsCheck("cell r");
       }
       turnOfCrosses = !turnOfCrosses;
-      //undoRedoButtonsController();
+      undoRedoButtonsController();
       return;
     }
     bindAllCells();
     turnOfCrosses = true;
     movesMade = 0;
     currentMove = 0;
-    //undoRedoButtonsController();
+    undoRedoButtonsController();
   }
 
   function getGameStateFromLocalStorage() {
     let field = JSON.parse(localStorage.getItem("field"));
     let turn = JSON.parse(localStorage.getItem("turn"));
-    /*let gameDB = JSON.parse(localStorage.getItem('gameStorage'));
+    let gameDB = JSON.parse(localStorage.getItem('gameStorage'));
         let movesCounter = JSON.parse(localStorage.getItem('movesMade'));
-        let move = JSON.parse(localStorage.getItem('currentMove'));*/
+        let move = JSON.parse(localStorage.getItem('currentMove'));
     if (!field) {
       return false;
     }
@@ -219,9 +219,9 @@ window.addEventListener("load", () => {
       }
     }
     turnOfCrosses = turn;
-    /*gameStorage = gameDB;
+    gameStorage = gameDB;
         movesMade = movesCounter;
-        currentTurn = move;*/
+        currentTurn = move;
     return true;
   }
 
@@ -235,10 +235,10 @@ window.addEventListener("load", () => {
     }
     localStorage.setItem("field", JSON.stringify(field));
     localStorage.setItem("turn", JSON.stringify(turnOfCrosses));
-    /*gameStorage[currentMove] = field;
+    gameStorage[currentMove] = field;
         localStorage.setItem('gameStorage',JSON.stringify(gameStorage));
         localStorage.setItem('movesMade', JSON.stringify(movesMade));
-        localStorage.setItem('currentMove', JSON.stringify(currentMove));*/
+        localStorage.setItem('currentMove', JSON.stringify(currentMove));
   }
 
   function undoMove() {
