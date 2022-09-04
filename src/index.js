@@ -12,6 +12,14 @@ window.addEventListener("load", () => {
     }
   }
 
+  function setTheField(){
+    for(let a = 0; a < battleField.length; a++){
+      let cell = document.getElementById(battleField[a]['cellId']);
+      cell.className = battleField[a]['cellClassName'];
+      //cell.removeEventListener('click', makeAMove);
+    }
+  }
+
   function unbindFreeCells() {
     for (let a = 0; a < generateField.ROWS_COUNT; a += 1) {
       for (let b = 0; b < generateField.COLS_COUNT; b += 1) {
@@ -154,13 +162,30 @@ window.addEventListener("load", () => {
   }
 
   function makeAMove() {
+    currentMove++;
     if (turnOfCrosses) {
       this.classList.add("ch");
     } else {
       this.classList.add("r");
     }
-    saveGameStateToLocalStorage();
+    if(currentMove < battleField.length){
+      let tempArr = [];
+      for (let a = 0; a < currentMove; a+=1){
+        tempArr.push(battleField[a]);
+      }
+      battleField = [];
+      battleField = tempArr;
+      tempArr = [];
+    }
+    //memoryButtonsController();
+    console.log(this.id);
+    console.log(this.className);
+    battleField.push({'cellId': this.id, 'cellClassName': this.className});
+    console.log(currentMove);
+    //currentMove++;
+    memoryButtonsController();
     turnOfCrosses = !turnOfCrosses;
+    saveGameStateToLocalStorage();
     winningConditionsCheck(this.className);
   }
 
@@ -182,111 +207,84 @@ window.addEventListener("load", () => {
     turnOfCrosses = true;
   }
 
-  function setGameStateOnTheFirstRun() {
-    if (getGameStateFromLocalStorage()) {
-      if (turnOfCrosses) {
-        winningConditionsCheck("cell ch");
-      } else if (!turnOfCrosses) {
-        winningConditionsCheck("cell r");
-      }
-      turnOfCrosses = !turnOfCrosses;
-      undoRedoButtonsController();
+  function getGameStateFromLocalStorage() {
+    let field = JSON.parse(localStorage.getItem('field'));
+    if (!field){
       return;
     }
-    bindAllCells();
-    turnOfCrosses = true;
-    movesMade = 0;
-    currentMove = 0;
-    undoRedoButtonsController();
-  }
-
-  function getGameStateFromLocalStorage() {
-    let field = JSON.parse(localStorage.getItem("field"));
-    let turn = JSON.parse(localStorage.getItem("turn"));
-    let gameDB = JSON.parse(localStorage.getItem('gameStorage'));
-        let movesCounter = JSON.parse(localStorage.getItem('movesMade'));
-        let move = JSON.parse(localStorage.getItem('currentMove'));
-    if (!field) {
-      return false;
-    }
-    for (let a = 0; a < generateField.ROWS_COUNT; a += 1) {
-      for (let b = 0; b < generateField.COLS_COUNT; b += 1) {
-        let cell = document.getElementById(`c-${a}${b}`);
-        cell.className = field[`c-${a}${b}`];
-        if (cell.className === "cell") {
-          cell.addEventListener("click", makeAMove);
-        }
-      }
-    }
+    battleField = field;
+    let turn = JSON.parse(localStorage.getItem('turn'));
+    let move = JSON.parse(localStorage.getItem('move'));
     turnOfCrosses = turn;
-    gameStorage = gameDB;
-        movesMade = movesCounter;
-        currentTurn = move;
-    return true;
+    currentMove = move;
+      console.log(battleField);
+      console.log(currentMove);
+      console.log(turnOfCrosses);
+    setTheField();
+    memoryButtonsController();
+    return;
   }
 
   function saveGameStateToLocalStorage() {
-    let field = {};
-    for (let a = 0; a < generateField.ROWS_COUNT; a += 1) {
-      for (let b = 0; b < generateField.COLS_COUNT; b += 1) {
-        let cell = document.getElementById(`c-${a}${b}`);
-        field[`c-${a}${b}`] = cell.className;
-      }
-    }
-    localStorage.setItem("field", JSON.stringify(field));
+    localStorage.clear();
+    localStorage.setItem("field", JSON.stringify(battleField));
     localStorage.setItem("turn", JSON.stringify(turnOfCrosses));
-    gameStorage[currentMove] = field;
-        localStorage.setItem('gameStorage',JSON.stringify(gameStorage));
-        localStorage.setItem('movesMade', JSON.stringify(movesMade));
-        localStorage.setItem('currentMove', JSON.stringify(currentMove));
+    localStorage.setItem('move', JSON.stringify(currentMove));
+    return;
   }
 
-  function undoMove() {
+  function undoMove(){
     currentMove -= 1;
-    for (let a = 0; a < generateField.ROWS_COUNT; a += 1) {
-      for (b = 0; b < generateField.COLS_COUNT; b += 1) {
-        let cell = document.getElementById(`c-${a}${b}`);
-        cell.className = gameStorage[currentMove][`c-${a}${b}`];
-        if (cell.className === "cell") {
-          cell.addEventListener("click", makeAMove);
-        }
-      }
+    restartGame();
+    for(let a = 0; a < currentMove; a+=1){
+      let cell = document.getElementById(battleField[a]['cellId']);
+      cell.className = battleField[a]['cellClassName']; 
     }
+    saveGameStateToLocalStorage();
+    turnOfCrosses = !turnOfCrosses;
+    //currentMove -= 1;
   }
 
-  function redoMove() {
+  function redoMove(){
     currentMove += 1;
-    for (let a = 0; a < generateField.ROWS_COUNT; a += 1) {
-      for (b = 0; b < generateField.COLS_COUNT; b += 1) {
-        let cell = document.getElementById(`c-${a}${b}`);
-        cell.className = gameStorage[currentMove][`c-${a}${b}`];
-        if (cell.className === "cell") {
-          cell.addEventListener("click", makeAMove);
-        }
-      }
+    restartGame();
+    for(let a = 0; a < currentMove; a+=1){
+      let cell = document.getElementById(battleField[a]['cellId']);
+      cell.className = battleField[a]['cellClassName']; 
     }
+    saveGameStateToLocalStorage();
+    turnOfCrosses = !turnOfCrosses;
   }
 
-  function undoRedoButtonsController() {
-    if (movesMade === 0 && currentMove === 0) {
+  function memoryButtonsController(){
+    let undoButton = document.getElementsByClassName("undo-btn btn");
+    let redoButton = document.getElementsByClassName("redo-btn btn");
+
+    if(currentMove === 0){
       return;
-    } else if (movesMade === currentMove) {
-      let undoButton = document.getElementsByClassName("undo-btn btn");
+    }else if(currentMove === 1){
+      undoButton[0].addEventListener("click", undoMove);
       undoButton[0].toggleAttribute("disabled");
-      undoButton.addEventListener("click", undoMove);
-    } else if (currentMove < movesMade) {
-      let undoButton = document.getElementsByClassName("undo-btn btn");
-      let redoButton = document.getElementsByClassName("redo-btn btn");
+      return;
+    }else if(currentMove < battleField.length-1){
+      undoButton[0].addEventListener("click", undoMove);
       undoButton[0].toggleAttribute("disabled");
+      redoButton[0].addEventListener("click", redoMove);
       redoButton[0].toggleAttribute("disabled");
-      undoButton.addEventListener("click", undoMove);
-      redoButton.addEventListener("click", redoMove);
+      return;
+    }else if(currentMove === battleField.length){
+      undoButton[0].addEventListener("click", undoMove);
+      undoButton[0].toggleAttribute("disabled");
+      return;
     }
+    return;
   }
 
-  let turnOfCrosses,
-    gameStorage = {},
-    movesMade,
-    currentMove;
-  setGameStateOnTheFirstRun();
+ 
+    let turnOfCrosses = true;
+    let battleField = [];
+    let currentMove = 0;
+    bindAllCells();
+    getGameStateFromLocalStorage();
+  
 });
