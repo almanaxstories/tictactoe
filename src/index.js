@@ -13,17 +13,19 @@ window.addEventListener("load", () => {
         let cellObj = move(e.target, movesCounter);
         movesCounter = cellObj.currentMove;
         console.log(movesCounter);
-        gameState.push(cellObj.cell);
+        gameState.push({cellId : cellObj.cell.id, cellClassName : cellObj.cell.className,});
         console.log(gameState[gameState.length-1]);
         saveToLocalStorage(gameState, movesCounter);
         renderWinner(getWinner, cellObj.cell);
     });
 
-    //pull from LS + field refill somewhere here
-    if (renderBattleField(pullFromLocalStorage, movesCounter)){
-        movesCounter = renderBattleField.pulledMovesCounter;
-    };
-
+    let localStorageData = renderBattleField(pullFromLocalStorage, movesCounter);
+    if(!localStorageData){
+        return;
+    }
+    movesCounter = localStorageData.pulledMovesCounter;
+    
+    
     function move(cell, currentMove){
         if(cell.className !== 'cell'){
             return;
@@ -100,13 +102,13 @@ function getWinner(cell){
     let row = rowsWin(cell);
     let col = colsWin(cell);
 
-    if(leftDiagonal.victory === true){
+    if(leftDiagonal.victory){
         return {winner : 'diagonal-left', cells : leftDiagonal.winningCells,};
-    }else if(rightDiagonal.victory === true) {
+    }else if(rightDiagonal.victory) {
         return {winner : 'diagonal-right', cells : rightDiagonal.winningCells,};
-    }else if(row.victory === true) {
+    }else if(row.victory) {
         return {winner : 'horizontal', cells : row.winningCells,};
-    }else if(col.victory === true) {
+    }else if(col.victory) {
         return {winner : 'vertical', cells : col.winningCells,};
     }else{
         return {winner: false};
@@ -122,7 +124,7 @@ function pullFromLocalStorage(){
     }
 
     let movesCounter = JSON.parse(localStorage.getItem('movesCounter'));
-    return {moves : moves, movesCounter : movesCounter, successful : true,};
+    return {moves : moves, movesCounter : movesCounter,};
 };
 
 function saveToLocalStorage(moves, movesCounter){
@@ -138,8 +140,8 @@ function renderBattleField(pullFromStorageFunc,movesCounter){
     }
 
     for(let move of pull.moves){
-        let cell = document.getElementById(move.id); 
-        cell.className = move.className;
+        let cell = document.getElementById(move.cellId); 
+        cell.className = move.cellClassName;
     }
 
     movesCounter = pull.movesCounter;
