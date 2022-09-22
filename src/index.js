@@ -10,97 +10,106 @@ window.addEventListener("load", () => {
     let gameState = [];
 
     field.addEventListener("click", e => {
-        let cell = move(e.target, moveCounter);
-        movesCounter = cell['currentMove'];
+        let cellObj = move(e.target, movesCounter);
+        movesCounter = cellObj.currentMove;
+        console.log(movesCounter);
+        gameState.push(cellObj.cell);
+        console.log(gameState[gameState.length-1]);
+        saveToLocalStorage(gameState, movesCounter);
+        renderWinner(getWinner, cellObj.cell);
     });
 
     //pull from LS + field refill somewhere here
-    //renderBattleField();
+    if (renderBattleField(pullFromLocalStorage, movesCounter)){
+        movesCounter = renderBattleField.pulledMovesCounter;
+    };
 
     function move(cell, currentMove){
+        if(cell.className !== 'cell'){
+            return;
+        }
         currentMove += 1;
         if(currentMove%2 !== 0 ){
         cell.className = 'cell ch';
         }else{
         cell.className = 'cell r'; 
         }
-        gameState.push(cell);
-        saveToLocalStorage(gameState, movesCounter);
-        return {'cell':cell, 'currentMove':currentMove};
+    
+        return {cell:cell, currentMove:currentMove};
     };
   
 });
 
 
-function getWinner(field, cell){
+function getWinner(cell){
     let rowCoordinate = parseInt(cell.id[2]), colCoordinate = parseInt(cell.id[3]);
 
-    function leftDiagonalWin(field, cell){
+    function leftDiagonalWin(cell){
         if(rowCoordinate !== colCoordinate){
-            return {'isItVictory?': false,};
+            return {victory: false,};
         }
             let winningCells = [];
-            for(let a of generateField.ROWS_COUNT){
-                if(field.getElementById(`c-${a}${a}`).className !== cell.className){
-                    return {'isItVictory?': false,};
+            for(let a = 0; a < generateField.ROWS_COUNT; a+=1){
+                if(document.getElementById(`c-${a}${a}`).className !== cell.className){
+                    return {victory: false,};
                 }
-                winningCells.push(field.getElementById(`c-${a}${a}`));
+                winningCells.push(document.getElementById(`c-${a}${a}`));
                 }
-                return {'isItVictory?': true, 'winningCells': winningCells,};                               
+                return {victory: true, winningCells: winningCells,};                               
             };
     
 
-    function rightDiagonalWin(field, cell){
+    function rightDiagonalWin(cell){
         if(colCoordinate !== generateField.COLS_COUNT-rowCoordinate){
-            return {'isItVictory?': false,};
+            return {victory: false,};
         }
             let winningCells = [];
-            for(let a of generateField.ROWS_COUNT){
-                if(field.getElementById(`c-${a}${(generateField.COLS_COUNT-1)-a}`).className !== cell.className){
-                    return {'isItVictory?': false,}; 
+            for(let a = 0; a < generateField.ROWS_COUNT; a+=1){
+                if(document.getElementById(`c-${a}${(generateField.COLS_COUNT-1)-a}`).className !== cell.className){
+                    return {victory: false,}; 
                 }
-                winningCells.push(field.getElementById(`c-${a}${(generateField.COLS_COUNT-1)-a}`));
+                winningCells.push(document.getElementById(`c-${a}${(generateField.COLS_COUNT-1)-a}`));
             }
-            return {'isItVictory?': true, 'winningCells': winningCells,}; 
+            return {victory: true, winningCells: winningCells,}; 
         };
 
-    function rowsWin(field, cell){
+    function rowsWin(cell){
         let winningCells = [];
-        for(let a of generateField.COLS_COUNT){
-            if(field.getElementById(`c-${rowCoordinate}${a}`).className !== cell.className){
-                return {'isItVictory?': false,};
+        for(let a = 0; a < generateField.COLS_COUNT; a+=1){
+            if(document.getElementById(`c-${rowCoordinate}${a}`).className !== cell.className){
+                return {victory: false,};
             }
-            winningCells.push(field.getElementById(`c-${rowCoordinate}${a}`));
+            winningCells.push(document.getElementById(`c-${rowCoordinate}${a}`));
         }
-        return {'isItVictory?': true, 'winningCells': winningCells,};
+        return {victory: true, winningCells: winningCells,};
     };
 
-    function colsWin(field, cell){
+    function colsWin(cell){
         let winningCells = [];
-        for(let a of generateField.ROWS_COUNT){
-            if(field.getElementById(`c-${a}${colCoordinate}`)!== cell.className){
-                return {'isItVictory?': false,};
+        for(a = 0; a < generateField.ROWS_COUNT; a+=1){
+            if(document.getElementById(`c-${a}${colCoordinate}`)!== cell.className){
+                return {victory: false,};
             }
-            winningCells.push(field.getElementById(`c-${a}${colCoordinate}`)!== cell.className);
+            winningCells.push(document.getElementById(`c-${a}${colCoordinate}`)!== cell.className);
         }
-        return {'isItVictory?': true, 'winningCells': winningCells,};
+        return {victory: true, winningCells: winningCells,};
     };
 
-    let leftDiagonal = leftDiagonalWin(field, cell);
-    let rightDiagonal = rightDiagonalWin(field, cell);
-    let row = rowsWin(field, cell);
-    let col = colsWin(field, cell);
+    let leftDiagonal = leftDiagonalWin(cell);
+    let rightDiagonal = rightDiagonalWin(cell);
+    let row = rowsWin(cell);
+    let col = colsWin(cell);
 
-    if(leftDiagonal["isItVictory?"] === true){
-        return {'winner':'diagonal-left', 'cells':leftDiagonal['winningCells'],};
-    }else if(rightDiagonal["isItVictory?"] === true) {
-        return {'winner':'diagonal-right', 'cells':rightDiagonal['winningCells'],};
-    }else if(row["isItVictory?"] === true) {
-        return {'winner':'horizontal', 'cells':row['winningCells'],};
-    }else if(col["isItVictory?"] === true) {
-        return {'winner':'vertical', 'cells':col['winningCells'],};
+    if(leftDiagonal.victory === true){
+        return {winner : 'diagonal-left', cells : leftDiagonal.winningCells,};
+    }else if(rightDiagonal.victory === true) {
+        return {winner : 'diagonal-right', cells : rightDiagonal.winningCells,};
+    }else if(row.victory === true) {
+        return {winner : 'horizontal', cells : row.winningCells,};
+    }else if(col.victory === true) {
+        return {winner : 'vertical', cells : col.winningCells,};
     }else{
-        return {'winner': false};
+        return {winner: false};
     }
 
 };
@@ -113,7 +122,7 @@ function pullFromLocalStorage(){
     }
 
     let movesCounter = JSON.parse(localStorage.getItem('movesCounter'));
-    return {'moves' : moves, 'movesCounter' : movesCounter, 'successful?' : true,};
+    return {moves : moves, movesCounter : movesCounter, successful : true,};
 };
 
 function saveToLocalStorage(moves, movesCounter){
@@ -121,19 +130,32 @@ function saveToLocalStorage(moves, movesCounter){
     localStorage.setItem('movesCounter', JSON.stringify(movesCounter));
 };
 
-function renderBattleField(pullFromStorageFunc,field,movesCounter){
+function renderBattleField(pullFromStorageFunc,movesCounter){
     let pull = pullFromStorageFunc();
 
     if(!pull){
         return false;
     }
 
-    for(let move of pull['moves']){
-        let cell = field.getElementById(move.id);
+    for(let move of pull.moves){
+        let cell = document.getElementById(move.id); 
         cell.className = move.className;
     }
 
-    movesCounter = pull['movesCounter'];
+    movesCounter = pull.movesCounter;
 
-    return movesCounter;
+    return {pulledMovesCounter : movesCounter};
 };
+
+function renderWinner(getWinnerFunc, cell){
+    let winningCells = getWinnerFunc(cell);
+
+    if(!winningCells.winner){
+        return;
+    }
+
+    for(let a of winningCells.cells){
+        a.classList.add(winningCells.winner);
+    }
+    return true;
+}
