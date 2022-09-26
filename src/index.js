@@ -4,6 +4,8 @@ import * as generateField from "./generateField.js";
 window.addEventListener("load", () => {
     let undoButton = document.getElementsByClassName("undo-btn btn");
     let redoButton = document.getElementsByClassName("redo-btn btn");
+    let wonTitle = document.getElementsByClassName('won-title');
+    let wonMessage = document.getElementsByClassName('won-message');
 
     let field = document.querySelector('.field');
     let gameState = loadGameState();
@@ -14,7 +16,7 @@ window.addEventListener("load", () => {
     if(previousCell){
         let winner = getWinner(field, previousCell, checkLeftDiagonal, checkRightDiagonal,
             checkCurrentRow, checkCurrentCol);
-        renderWinner(winner);
+        renderWinner(winner, wonTitle, wonMessage);
     };
 
     field.addEventListener("click", e => {
@@ -47,7 +49,7 @@ window.addEventListener("load", () => {
         let winner = getWinner(field, {cellId: cell.id, cellClassName: cell.className}, 
             checkLeftDiagonal, checkRightDiagonal,
             checkCurrentRow, checkCurrentCol);
-        renderWinner(winner);
+        renderWinner(winner, wonTitle, wonMessage);
 
         saveGameState(gameState);
     });
@@ -92,7 +94,7 @@ function checkLeftDiagonal(field,cell){
             }
             winningCells.push(iterableCell);
         }
-        return {winner: 'diagonal-left', cells: winningCells,};
+        return {winner: 'diagonal-right', cells: winningCells,};
 }
 
 function checkRightDiagonal(field, cell){
@@ -111,7 +113,7 @@ function checkRightDiagonal(field, cell){
         }
         winningCells.push(iterableCell);
     }
-    return {winner : 'diagonal-right', cells : winningCells,};
+    return {winner : 'diagonal-left', cells : winningCells,};
 }
 
 function checkCurrentRow(field, cell){
@@ -170,13 +172,19 @@ function renderBattleField(gameState) {
     }
 }
 
-function renderWinner(object) {
+function renderWinner(object, wonTitle, wonMessage) {
     if (!object.winner) {
         return;
     }
+    console.log(object.cells[0]);
+    object.cells[0].className === 'cell ch' ? wonMessage[0].innerText = 'Crosses won!' : wonMessage[0].innerText = 'Toes won!';
 
     for (let cell of object.cells) {
-        cell.classList.add(object.winner);
+        cell.classList.add('win', object.winner);
+        
     }
-    //return true;
+    
+    wonTitle[0].classList.toggle('hidden');
+   
+    
 };
