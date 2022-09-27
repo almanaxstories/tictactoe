@@ -2,12 +2,27 @@ import "./style.css";
 import * as generateField from "./generateField.js";
 
 window.addEventListener("load", () => {
+    let field = document.querySelector('.field');
     let undoButton = document.getElementsByClassName("undo-btn btn");
+    undoButton[0].addEventListener('click', undoMove);
     let redoButton = document.getElementsByClassName("redo-btn btn");
+    redoButton[0].addEventListener('click', redoMove);
     let wonTitle = document.getElementsByClassName('won-title');
     let wonMessage = document.getElementsByClassName('won-message');
+    //let restartButton = document.getElementsByClassName('restart-btn');
 
-    let field = document.querySelector('.field');
+    /*function restartGameFunction(generateRows, rowsCount, colsCount){
+        generateRows(rowsCount,colsCount);
+    };
+    let restartGame = restartGameFunction(generateField.generateRows, generateField.ROWS_COUNT,generateField.COLS_COUNT);
+    */
+   /*restartButton[0].addEventListener('click', restartGame =>{
+        field.innerHTML = '';
+        //gameState.movesCounter = 0;
+        generateField.generateRows(generateField.ROWS_COUNT, generateField.COLS_COUNT);
+        wonTitle[0].classList.add('hidden');
+    });*/
+    //let restartGame = restartGameFunction(generateField.ROWS_COUNT,generateField.COLS_COUNT);
     let gameState = loadGameState();
     renderBattleField(gameState);
     console.log(gameState.moves[gameState.moves.length - 1]);
@@ -16,13 +31,20 @@ window.addEventListener("load", () => {
     if(previousCell){
         let winner = getWinner(field, previousCell, checkLeftDiagonal, checkRightDiagonal,
             checkCurrentRow, checkCurrentCol);
-        renderWinner(winner, wonTitle, wonMessage);
+        renderWinner(winner, wonTitle, wonMessage/*, generateField.generateRows, generateField.ROWS_COUNT, generateField.COLS_COUNT*/);
     };
+
+ 
 
     field.addEventListener("click", e => {
         let cell = e.target;
         if (cell.className !== 'cell') {
             return;
+        }else if(cell.className === 'restart-btn'){
+            field.innerHTML = '';
+            gameState.movesCounter = 0;
+            generateField.generateRows(generateField.ROWS_COUNT, generateField.COLS_COUNT);
+            wonTitle[0].classList.add('hidden');
         }
 
         gameState.movesCounter += 1;
@@ -49,11 +71,14 @@ window.addEventListener("load", () => {
         let winner = getWinner(field, {cellId: cell.id, cellClassName: cell.className}, 
             checkLeftDiagonal, checkRightDiagonal,
             checkCurrentRow, checkCurrentCol);
-        renderWinner(winner, wonTitle, wonMessage);
+        renderWinner(winner, wonTitle, wonMessage/*, generateField.generateRows, generateField.ROWS_COUNT, generateField.COLS_COUNT*/);
 
         saveGameState(gameState);
     });
 
+    /*function restartGameFunction(generateRows, rowsCount, colsCount){
+        generateRows(rowsCount,colsCount);
+    };*/
 });
 
 
@@ -75,7 +100,7 @@ function getWinner(field, cell, leftDiagonalCheckFunction, rightDiagonalCheckFun
     } else {
         return {winner: '',};
     }
-}
+};
 
 function checkLeftDiagonal(field,cell){
     let rowCoordinate = parseInt(cell.cellId[2]), colCoordinate = parseInt(cell.cellId[3]);
@@ -95,7 +120,7 @@ function checkLeftDiagonal(field,cell){
             winningCells.push(iterableCell);
         }
         return {winner: 'diagonal-right', cells: winningCells,};
-}
+};
 
 function checkRightDiagonal(field, cell){
     let rowCoordinate = parseInt(cell.cellId[2]), colCoordinate = parseInt(cell.cellId[3]);
@@ -114,7 +139,7 @@ function checkRightDiagonal(field, cell){
         winningCells.push(iterableCell);
     }
     return {winner : 'diagonal-left', cells : winningCells,};
-}
+};
 
 function checkCurrentRow(field, cell){
     let rowCoordinate = parseInt(cell.cellId[2]), winningCells = [];
@@ -141,7 +166,7 @@ function checkCurrentCol(field, cell){
         winningCells.push(iterableCell);
     }
     return {winner: 'vertical', cells: winningCells,};
-}
+};
 
 function loadGameState() {
     let moves = JSON.parse(localStorage.getItem('moves'));
@@ -158,21 +183,21 @@ function loadGameState() {
         moves: moves,
         movesCounter: movesCounter
     };
-}
+};
 
 function saveGameState(gameState) {
     localStorage.setItem('moves', JSON.stringify(gameState.moves));
     localStorage.setItem('movesCounter', JSON.stringify(gameState.movesCounter));
-}
+};
 
 function renderBattleField(gameState) {
     for (let move of gameState.moves) {
         let cell = document.getElementById(move.cellId);
         cell.className = move.cellClassName;
     }
-}
+};
 
-function renderWinner(object, wonTitle, wonMessage) {
+function renderWinner(object, wonTitle, wonMessage/*, generateFieldFunction, rowsCount, colsCount*/) {
     if (!object.winner) {
         return;
     }
@@ -184,7 +209,33 @@ function renderWinner(object, wonTitle, wonMessage) {
         
     }
     
-    wonTitle[0].classList.toggle('hidden');
+    wonTitle[0].classList.remove('hidden');
+
+    //generateFieldFunction(rowsCount, colsCount);
    
     
+};
+
+function buttonsController(movesCounter, gameState, undoButton, redoButton){
+    if(movesCounter === 0){
+        undoButton.classList.add('disabled');
+    }else if(movesCounter === gameState.length){
+        undoButton.classList.remove('disabled');
+        redoButton.classList.add('disabled');
+    }else if(movesCounter < gameState.length){
+        undoButton.classList.remove('disabled');
+        redoButton.classList.remove('disabled');
+    }
+};
+
+function undoMove(){
+
+};
+
+function redoMove(){
+
+};
+
+function restartGameFunction(generateRows, rowsCount, colsCount){
+    generateRows(rowsCount,colsCount);
 };
