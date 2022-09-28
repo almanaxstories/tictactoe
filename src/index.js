@@ -4,47 +4,29 @@ import * as generateField from "./generateField.js";
 window.addEventListener("load", () => {
     let field = document.querySelector('.field');
     let undoButton = document.getElementsByClassName("undo-btn btn");
-    undoButton[0].addEventListener('click', undoMove);
+    //undoButton[0].addEventListener('click', undoMove);
     let redoButton = document.getElementsByClassName("redo-btn btn");
-    redoButton[0].addEventListener('click', redoMove);
+    //redoButton[0].addEventListener('click', redoMove);
     let wonTitle = document.getElementsByClassName('won-title');
-    let wonMessage = document.getElementsByClassName('won-message');
-    //let restartButton = document.getElementsByClassName('restart-btn');
+    let restartButton = wonTitle[0].querySelector('.restart-btn');
+   
 
-    /*function restartGameFunction(generateRows, rowsCount, colsCount){
-        generateRows(rowsCount,colsCount);
-    };
-    let restartGame = restartGameFunction(generateField.generateRows, generateField.ROWS_COUNT,generateField.COLS_COUNT);
-    */
-   /*restartButton[0].addEventListener('click', restartGame =>{
-        field.innerHTML = '';
-        //gameState.movesCounter = 0;
-        generateField.generateRows(generateField.ROWS_COUNT, generateField.COLS_COUNT);
-        wonTitle[0].classList.add('hidden');
-    });*/
-    //let restartGame = restartGameFunction(generateField.ROWS_COUNT,generateField.COLS_COUNT);
+    
     let gameState = loadGameState();
     renderBattleField(gameState);
-    console.log(gameState.moves[gameState.moves.length - 1]);
+    console.log(gameState.moves[gameState.moves.length - 1]);//point
     let previousCell = gameState.moves[gameState.moves.length - 1];
 
     if(previousCell){
         let winner = getWinner(field, previousCell, checkLeftDiagonal, checkRightDiagonal,
             checkCurrentRow, checkCurrentCol);
-        renderWinner(winner, wonTitle, wonMessage/*, generateField.generateRows, generateField.ROWS_COUNT, generateField.COLS_COUNT*/);
+            renderWinner(winner, wonTitle);//pay attention
     };
-
- 
 
     field.addEventListener("click", e => {
         let cell = e.target;
         if (cell.className !== 'cell') {
             return;
-        }else if(cell.className === 'restart-btn'){
-            field.innerHTML = '';
-            gameState.movesCounter = 0;
-            generateField.generateRows(generateField.ROWS_COUNT, generateField.COLS_COUNT);
-            wonTitle[0].classList.add('hidden');
         }
 
         gameState.movesCounter += 1;
@@ -56,9 +38,9 @@ window.addEventListener("load", () => {
 
         console.log(gameState.movesCounter);
 
-        if(gameState.movesCounter-1 !== gameState.moves.length){
+        if(gameState.movesCounter !== gameState.moves.length){
             let tempArr = gameState.moves.slice(0, gameState.movesCounter-1);
-            gameState.movesCounter = tempArr;
+            gameState.moves = tempArr;
             tempArr = [];
         }
 
@@ -66,19 +48,27 @@ window.addEventListener("load", () => {
             cellId: cell.id,
             cellClassName: cell.className
         });
-        console.log(gameState[gameState.moves.length - 1]);
+        console.log(gameState.moves[gameState.moves.length-1]);//point
 
         let winner = getWinner(field, {cellId: cell.id, cellClassName: cell.className}, 
             checkLeftDiagonal, checkRightDiagonal,
             checkCurrentRow, checkCurrentCol);
-        renderWinner(winner, wonTitle, wonMessage/*, generateField.generateRows, generateField.ROWS_COUNT, generateField.COLS_COUNT*/);
+        renderWinner(winner, wonTitle);//pay attention
 
         saveGameState(gameState);
     });
 
-    /*function restartGameFunction(generateRows, rowsCount, colsCount){
-        generateRows(rowsCount,colsCount);
-    };*/
+    restartButton.addEventListener('click', restartGame =>{
+        localStorage.clear();
+        wonTitle[0].classList.add('hidden');
+        for(let row = 0; row < generateField.ROWS_COUNT; row+=1){
+            for(let col = 0; col < generateField.COLS_COUNT; col+=1 ){
+                let cell = field.querySelector(`#c-${row}${col}`);
+                cell.className = 'cell';
+            }
+        }
+        gameState.movesCounter = 0;
+    })
 });
 
 
@@ -197,12 +187,14 @@ function renderBattleField(gameState) {
     }
 };
 
-function renderWinner(object, wonTitle, wonMessage/*, generateFieldFunction, rowsCount, colsCount*/) {
+function renderWinner(object, wonTitle) {
     if (!object.winner) {
         return;
     }
-    console.log(object.cells[0]);
-    object.cells[0].className === 'cell ch' ? wonMessage[0].innerText = 'Crosses won!' : wonMessage[0].innerText = 'Toes won!';
+    console.log(object.cells[0]);//point
+    let wonMessage = wonTitle[0].querySelector('.won-message');
+    let restartButton = wonTitle[0].querySelector('.restart-btn');
+    object.cells[0].className === 'cell ch' ? wonMessage.innerText = 'Crosses won!' : wonMessage.innerText = 'Toes won!';
 
     for (let cell of object.cells) {
         cell.classList.add('win', object.winner);
@@ -210,10 +202,6 @@ function renderWinner(object, wonTitle, wonMessage/*, generateFieldFunction, row
     }
     
     wonTitle[0].classList.remove('hidden');
-
-    //generateFieldFunction(rowsCount, colsCount);
-   
-    
 };
 
 function buttonsController(movesCounter, gameState, undoButton, redoButton){
@@ -236,6 +224,9 @@ function redoMove(){
 
 };
 
-function restartGameFunction(generateRows, rowsCount, colsCount){
+/*function restartGameFunction(rowsCount, colsCount, movesCounter){
+    field.innerHTML = '';
+    //gameState.movesCounter = 0;
     generateRows(rowsCount,colsCount);
-};
+    wonTitle[0].classList.add('hidden');
+};*/
