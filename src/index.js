@@ -10,13 +10,12 @@ window.addEventListener("load", () => {
        
     let gameState = loadGameState();
     renderBattleField(gameState, field);
-    console.log(gameState.moves[gameState.moves.length - 1]);//point
     let previousCell = gameState.moves[gameState.moves.length - 1];
 
     if(previousCell){
         let winner = getWinner(field, previousCell, checkLeftDiagonal, checkRightDiagonal,
-            checkCurrentRow, checkCurrentCol);
-        renderWinner(winner, wonTitle);//pay attention
+            checkCurrentRow, checkCurrentCol, checkDraw, generateField.ROWS_COUNT, generateField.COLS_COUNT);
+        renderWinner(winner, wonTitle);
         buttonsController(gameState, undoButton[0], redoButton[0]);
     };
 
@@ -33,8 +32,6 @@ window.addEventListener("load", () => {
             cell.className = 'cell r';
         }
 
-        console.log(gameState.movesCounter);
-
         if(gameState.movesCounter <= gameState.moves.length){
             let tempArr = gameState.moves.slice(0, gameState.movesCounter-1);
             gameState.moves = tempArr;
@@ -45,12 +42,11 @@ window.addEventListener("load", () => {
             cellId: cell.id,
             cellClassName: cell.className
         });
-        console.log(gameState.moves[gameState.moves.length-1]);//point
 
         let winner = getWinner(field, {cellId: cell.id, cellClassName: cell.className}, 
             checkLeftDiagonal, checkRightDiagonal,
-            checkCurrentRow, checkCurrentCol);
-        renderWinner(winner, wonTitle);//pay attention
+            checkCurrentRow, checkCurrentCol, checkDraw, generateField.ROWS_COUNT, generateField.COLS_COUNT);
+        renderWinner(winner, wonTitle);
         buttonsController(gameState, undoButton[0], redoButton[0]);
         saveGameState(gameState);
     });
@@ -71,8 +67,8 @@ window.addEventListener("load", () => {
         renderBattleField(gameState, field);
         let lastCell = gameState.moves[gameState.moves.length - 1];
         let winner = getWinner(field, lastCell, checkLeftDiagonal, checkRightDiagonal,
-            checkCurrentRow, checkCurrentCol);
-        renderWinner(winner, wonTitle);//pay attention
+            checkCurrentRow, checkCurrentCol, checkDraw, generateField.ROWS_COUNT, generateField.COLS_COUNT);
+        renderWinner(winner, wonTitle);
         buttonsController(gameState, undoButton[0], redoButton[0]);
         saveGameState(gameState);
     });
@@ -84,19 +80,20 @@ window.addEventListener("load", () => {
         renderBattleField(gameState, field);
         let lastCell = gameState.moves[gameState.moves.length - 1];
         let winner = getWinner(field, lastCell, checkLeftDiagonal, checkRightDiagonal,
-            checkCurrentRow, checkCurrentCol);
-        renderWinner(winner, wonTitle);//pay attention
+            checkCurrentRow, checkCurrentCol, checkDraw, generateField.ROWS_COUNT, generateField.COLS_COUNT);
+        renderWinner(winner, wonTitle);
         buttonsController(gameState, undoButton[0], redoButton[0]);
         saveGameState(gameState);
     });
 });
 
 function getWinner(field, cell, leftDiagonalCheckFunction, rightDiagonalCheckFunction,
-                    rowCheckFunction, colCheckFunction) {
+                    rowCheckFunction, colCheckFunction, drawCheckFunction, rowsCount, colsCount) {
     let leftDiagonalWin = leftDiagonalCheckFunction(field,cell);
     let rightDiagonalWin = rightDiagonalCheckFunction(field,cell);
     let rowWin = rowCheckFunction(field,cell);
     let colWin = colCheckFunction(field,cell);
+    let draw = drawCheckFunction(field, rowsCount, colsCount);
 
     if (leftDiagonalWin.winner) {
         return {winner: leftDiagonalWin.winner, cells: leftDiagonalWin.cells,};
@@ -106,6 +103,8 @@ function getWinner(field, cell, leftDiagonalCheckFunction, rightDiagonalCheckFun
         return {winner: rowWin.winner, cells: rowWin.cells,};
     } else if (colWin.winner) {
         return {winner: colWin.winner, cells: colWin.cells,};
+    } else if (draw.winner) {
+        return {winner: draw.winner,};
     } else {
         return {winner: '',};
     }
@@ -177,6 +176,18 @@ function checkCurrentCol(field, cell){
     return {winner: 'vertical', cells: winningCells,};
 };
 
+function checkDraw(field, rowsCount, colsCount){
+    for (let row = 0; row < rowsCount; row +=1){
+        for(let col = 0; col < colsCount; col +=1){
+            let cell = field.querySelector(`#c-${row}${col}`);
+            if(cell.className === 'cell'){
+                return {winner : '',};
+            }
+        }
+    }
+    return {winner : 'draw',};
+}
+
 function loadGameState() {
     let moves = JSON.parse(localStorage.getItem('moves'));
 
@@ -210,9 +221,14 @@ function renderWinner(object, wonTitle) {
     if (!object.winner) {
         return;
     }
-    console.log(object.cells[0]);//point
+    
     let wonMessage = wonTitle[0].querySelector('.won-message');
-    let restartButton = wonTitle[0].querySelector('.restart-btn');
+    
+    if(object.winner === 'draw'){
+        wonMessage.innerText = `It's a draw!`;
+        wonTitle[0].classList.remove('hidden');
+        return; 
+    }
     object.cells[0].className === 'cell ch' ? wonMessage.innerText = 'Crosses won!' : wonMessage.innerText = 'Toes won!';
 
     for (let cell of object.cells) {
