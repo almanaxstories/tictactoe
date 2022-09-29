@@ -13,14 +13,15 @@ window.addEventListener("load", () => {
 
     
     let gameState = loadGameState();
-    renderBattleField(gameState);
+    renderBattleField(gameState, field);
     console.log(gameState.moves[gameState.moves.length - 1]);//point
     let previousCell = gameState.moves[gameState.moves.length - 1];
 
     if(previousCell){
         let winner = getWinner(field, previousCell, checkLeftDiagonal, checkRightDiagonal,
             checkCurrentRow, checkCurrentCol);
-            renderWinner(winner, wonTitle);//pay attention
+        renderWinner(winner, wonTitle);//pay attention
+        buttonsController(gameState, undoButton[0], redoButton[0]);
     };
 
     field.addEventListener("click", e => {
@@ -54,6 +55,7 @@ window.addEventListener("load", () => {
             checkLeftDiagonal, checkRightDiagonal,
             checkCurrentRow, checkCurrentCol);
         renderWinner(winner, wonTitle);//pay attention
+        buttonsController(gameState, undoButton[0], redoButton[0]);
 
         saveGameState(gameState);
     });
@@ -61,14 +63,42 @@ window.addEventListener("load", () => {
     restartButton.addEventListener('click', restartGame =>{
         localStorage.clear();
         wonTitle[0].classList.add('hidden');
-        for(let row = 0; row < generateField.ROWS_COUNT; row+=1){
+        /*for(let row = 0; row < generateField.ROWS_COUNT; row+=1){
             for(let col = 0; col < generateField.COLS_COUNT; col+=1 ){
                 let cell = field.querySelector(`#c-${row}${col}`);
                 cell.className = 'cell';
             }
-        }
+        }*/
+        clearBattleField(generateField.ROWS_COUNT,generateField.COLS_COUNT, field);
         gameState.movesCounter = 0;
+        buttonsController(gameState, undoButton[0], redoButton[0]);
     })
+
+    undoButton[0].addEventListener('click', undoMove =>{
+        wonTitle[0].classList.add('hidden');
+        clearBattleField(generateField.ROWS_COUNT, generateField.COLS_COUNT, field);
+        gameState.movesCounter -= 1;
+        renderBattleField(gameState, field);
+        let lastCell = gameState.moves[gameState.moves.length - 1];
+        let winner = getWinner(field, lastCell, checkLeftDiagonal, checkRightDiagonal,
+            checkCurrentRow, checkCurrentCol);
+        renderWinner(winner, wonTitle);//pay attention
+        buttonsController(gameState, undoButton[0], redoButton[0]);
+        saveGameState(gameState);
+    });
+
+    redoButton[0].addEventListener('click', redoMove =>{
+        wonTitle[0].classList.add('hidden');
+        clearBattleField(generateField.ROWS_COUNT, generateField.COLS_COUNT, field);
+        gameState.movesCounter += 1;
+        renderBattleField(gameState, field);
+        let lastCell = gameState.moves[gameState.moves.length - 1];
+        let winner = getWinner(field, lastCell, checkLeftDiagonal, checkRightDiagonal,
+            checkCurrentRow, checkCurrentCol);
+        renderWinner(winner, wonTitle);//pay attention
+        buttonsController(gameState, undoButton[0], redoButton[0]);
+        saveGameState(gameState);
+    });
 });
 
 
@@ -180,10 +210,24 @@ function saveGameState(gameState) {
     localStorage.setItem('movesCounter', JSON.stringify(gameState.movesCounter));
 };
 
-function renderBattleField(gameState) {
+/*function renderBattleField(gameState) {
     for (let move of gameState.moves) {
         let cell = document.getElementById(move.cellId);
         cell.className = move.cellClassName;
+    }
+};*/
+
+/*function renderBattleField(gameState, field) {
+    for (let move of gameState.moves) {
+        let cell = field.querySelector(`#${move.cellId}`);
+        cell.className = move.cellClassName;
+    }
+};*/
+
+function renderBattleField(gameState, field) {
+    for (let move = 0; move < gameState.movesCounter; move+=1) {
+        let cell = field.querySelector(`#${gameState.moves[move].cellId}`);
+        cell.className = gameState.moves[move].cellClassName;
     }
 };
 
@@ -204,29 +248,45 @@ function renderWinner(object, wonTitle) {
     wonTitle[0].classList.remove('hidden');
 };
 
-function buttonsController(movesCounter, gameState, undoButton, redoButton){
-    if(movesCounter === 0){
-        undoButton.classList.add('disabled');
-    }else if(movesCounter === gameState.length){
-        undoButton.classList.remove('disabled');
-        redoButton.classList.add('disabled');
-    }else if(movesCounter < gameState.length){
-        undoButton.classList.remove('disabled');
-        redoButton.classList.remove('disabled');
+function buttonsController(gameState, undoButton, redoButton){
+    if(gameState.movesCounter === 0){
+        undoButton.disabled = true;
+    }else if(gameState.movesCounter === gameState.moves.length){
+        undoButton.disabled = false;
+        redoButton.disabled = true;
+    }else if(gameState.movesCounter < gameState.moves.length && gameState.movesCounter > 0){
+        undoButton.disabled = false;
+        redoButton.disabled = false;
     }
 };
 
-function undoMove(){
+/*function undoMove(clearField, rowsCount, colsCount, field, gameState){
+    clearField(rowsCount, colsCount, field);
+    gameState.movesCounter-=1;
+    renderBattleField(gameState, field);
+    console.log('touchdown! undo');
+};*/
 
-};
-
-function redoMove(){
-
-};
+/*function redoMove(){
+    console.log('touchdown! redo');
+};*/
 
 /*function restartGameFunction(rowsCount, colsCount, movesCounter){
     field.innerHTML = '';
     //gameState.movesCounter = 0;
     generateRows(rowsCount,colsCount);
     wonTitle[0].classList.add('hidden');
+};*/
+
+function clearBattleField(rowsCount, colsCount, field){
+    for(let row = 0; row < rowsCount; row+=1){
+        for(let col = 0; col < colsCount; col+=1 ){
+            let cell = field.querySelector(`#c-${row}${col}`);
+            cell.className = 'cell';
+        }
+    }
+};
+
+/*function unbindEmptyCells(rowsCount, colsCount, field){
+
 };*/
