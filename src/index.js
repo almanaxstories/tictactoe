@@ -24,9 +24,34 @@ window.addEventListener("load", () => {
       generateField.ROWS_COUNT,
       generateField.COLS_COUNT
     );
-    renderWinner(winner, wonTitle);
     buttonsController(gameState, undoButton[0], redoButton[0]);
+    renderWinner(winner, wonTitle, undoButton[0], redoButton[0]);
   }
+
+  window.addEventListener("storage", (f) => {
+    gameState = loadGameState();
+    wonTitle[0].classList.add("hidden");
+    buttonsController(gameState, undoButton[0], redoButton[0]);
+    clearBattleField(generateField.ROWS_COUNT, generateField.COLS_COUNT, field);
+    renderBattleField(gameState, field);
+    previousCell = gameState.moves[gameState.moves.length - 1];
+
+    if (previousCell) {
+      let winner = getWinner(
+        field,
+        previousCell,
+        checkLeftDiagonal,
+        checkRightDiagonal,
+        checkCurrentRow,
+        checkCurrentCol,
+        checkDraw,
+        generateField.ROWS_COUNT,
+        generateField.COLS_COUNT
+      );
+      buttonsController(gameState, undoButton[0], redoButton[0]);
+      renderWinner(winner, wonTitle, undoButton[0], redoButton[0]);
+    }
+  });
 
   field.addEventListener("click", (e) => {
     let cell = e.target;
@@ -63,12 +88,12 @@ window.addEventListener("load", () => {
       generateField.ROWS_COUNT,
       generateField.COLS_COUNT
     );
-    renderWinner(winner, wonTitle);
     buttonsController(gameState, undoButton[0], redoButton[0]);
+    renderWinner(winner, wonTitle, undoButton[0], redoButton[0]);
     saveGameState(gameState);
   });
 
-  restartButton.addEventListener("click", (restartGame) => {
+  restartButton.addEventListener("click", () => {
     wonTitle[0].classList.add("hidden");
     clearBattleField(generateField.ROWS_COUNT, generateField.COLS_COUNT, field);
     gameState.movesCounter = 0;
@@ -77,7 +102,7 @@ window.addEventListener("load", () => {
     buttonsController(gameState, undoButton[0], redoButton[0]);
   });
 
-  undoButton[0].addEventListener("click", (undoMove) => {
+  undoButton[0].addEventListener("click", () => {
     wonTitle[0].classList.add("hidden");
     clearBattleField(generateField.ROWS_COUNT, generateField.COLS_COUNT, field);
     gameState.movesCounter -= 1;
@@ -94,12 +119,12 @@ window.addEventListener("load", () => {
       generateField.ROWS_COUNT,
       generateField.COLS_COUNT
     );
-    renderWinner(winner, wonTitle);
     buttonsController(gameState, undoButton[0], redoButton[0]);
+    renderWinner(winner, wonTitle, undoButton[0], redoButton[0]);
     saveGameState(gameState);
   });
 
-  redoButton[0].addEventListener("click", (redoMove) => {
+  redoButton[0].addEventListener("click", () => {
     wonTitle[0].classList.add("hidden");
     clearBattleField(generateField.ROWS_COUNT, generateField.COLS_COUNT, field);
     gameState.movesCounter += 1;
@@ -116,8 +141,8 @@ window.addEventListener("load", () => {
       generateField.ROWS_COUNT,
       generateField.COLS_COUNT
     );
-    renderWinner(winner, wonTitle);
     buttonsController(gameState, undoButton[0], redoButton[0]);
+    renderWinner(winner, wonTitle, undoButton[0], redoButton[0]);
     saveGameState(gameState);
   });
 });
@@ -267,7 +292,7 @@ function renderBattleField(gameState, field) {
   }
 }
 
-function renderWinner(object, wonTitle) {
+function renderWinner(object, wonTitle, undoButton, redoButton) {
   if (!object.winner) {
     return;
   }
@@ -288,6 +313,8 @@ function renderWinner(object, wonTitle) {
   }
 
   wonTitle[0].classList.remove("hidden");
+  undoButton.disabled = true;
+  redoButton.disabled = true;
 }
 
 function buttonsController(gameState, undoButton, redoButton) {
